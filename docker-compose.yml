@@ -1,0 +1,56 @@
+version: "2.2"
+
+services:
+  # ------ PRODUCER SERVICE (COUNTRY) ------
+  country-mysql:
+    image: mysql:8.0
+    container_name: country-mysql
+    environment:
+      MYSQL_DATABASE: countrydb
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3307:3306"
+    restart: unless-stopped
+
+  country-service:
+    build: ./country-service
+    container_name: country-service
+    restart: on-failure
+    ports:
+      - "8081:8080"
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://country-mysql:3306/countrydb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
+    depends_on:
+      - country-mysql
+
+  # ------ CONSUMER SERVICE (BEACH) ------
+  beach-mysql:
+    image: mysql:8.0
+    container_name: beach-mysql
+    environment:
+      MYSQL_DATABASE: beachdb
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3308:3306"
+    restart: unless-stopped
+
+  beach-service:
+    build: ./beach-service
+    container_name: beach-service
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_PROFILES_ACTIVE=docker
+      - COUNTRY_SERVICE_URL=http://country-service:8080   # Feign client route
+      - SPRING_DATASOURCE_URL=jdbc:mysql://beach-mysql:3306/beachdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=rootpassword
+    depends_on:
+      - beach-mysql
+      - country-service
