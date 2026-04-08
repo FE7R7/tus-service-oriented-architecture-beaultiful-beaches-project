@@ -1,10 +1,9 @@
 # tus-service-oriented-architecture-beaultiful-beaches-project
 
-# SOA4 Project Report
+# SOA4 Project
 
-**Domain:** World's Most Beautiful Beaches & Countries
+**Projct Title:** World's Most Beautiful Beaches & Countries
 **Communication Style:** Request-Response (Asynchronous Nonblocking) via OpenFeign
-**GitHub Repository:** `[Insert Public GitHub Link Here]`
 
 ---
 
