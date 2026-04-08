@@ -26,7 +26,7 @@ function fetchBeaches() {
             // Handle the response caching
             if (response.status === 304) {
                 console.log("304 Not Modified - Using cached data");
-                showStatus(304, '304 Not Modified (Cached)');
+                showStatus(304, '304 Not Modified (Cached)', currentETag);
                 return null; // Return null to skip json processing because body is empty
             } else if (response.status === 200) {
                 console.log("200 OK - Fetched fresh data");
@@ -36,7 +36,7 @@ function fetchBeaches() {
                 if (etagHeader) {
                     currentETag = etagHeader;
                 }
-                showStatus(200, '200 OK (Fresh Data)');
+                showStatus(200, '200 OK (Fresh Data)', etagHeader);
                 return response.json();
             } else {
                 throw new Error("Unexpected status: " + response.status);
@@ -83,17 +83,31 @@ function renderTable(data) {
     });
 }
 
-// Show status badge
-function showStatus(code, msg) {
+// Show status badge and ETag badge side by side with the same colour
+function showStatus(code, msg, etag = null) {
+    const colorClass = code === 200 ? 'status-200' : 'status-304';
+
+    // Status badge
     const badge = document.getElementById('statusBadge');
-    badge.className = 'status-badge show ' + (code === 200 ? 'status-200' : 'status-304');
+    badge.className = 'status-badge show ' + colorClass;
     badge.innerHTML = code === 200
         ? `<i class="fa-solid fa-cloud-arrow-down"></i> ${msg}`
         : `<i class="fa-solid fa-bolt"></i> ${msg}`;
 
-    // Hide badge after 4 seconds
+    // ETag badge: same colour class, same show/hide lifecycle
+    const etagBadge = document.getElementById('etagBadge');
+    if (etag) {
+        etagBadge.className = 'status-badge show ' + colorClass;
+        etagBadge.innerHTML = `<i class="fa-solid fa-tag"></i> ${etag}`;
+    } else {
+        etagBadge.className = 'status-badge';
+        etagBadge.innerHTML = '';
+    }
+
+    // Both badges disappear at the same time
     setTimeout(() => {
         badge.classList.remove('show');
+        etagBadge.classList.remove('show');
     }, 4000);
 }
 
